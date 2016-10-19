@@ -29,7 +29,8 @@ fs.readFile('appData\\doNotSync\\messages.html', 'utf8', function (err, data) {
     stream.once('open', function (fd) {
         for (var m in THAT.allMessages) {
             var message = THAT.allMessages[m];
-            stream.write(message.id + "|" + message.userName.replace("|", "%") + "|" + message.dateTimeAsNumber + "|" + message.message.replace("|", "%") + "|" + message.chatId + "\n");
+            var dateOfPosting = message.dateTime.getDate() + "/" + message.dateTime.getMonth() + "/" + message.dateTime.getFullYear() + " " + message.dateTime.getHours() + ":" + message.dateTime.getMinutes();
+            stream.write(message.id + "|" + message.userName.replace("|", "%") + "|" + message.dateTimeAsNumber + "|" + dateOfPosting + "|" + message.message.replace(/\s+/g, " ").replace(/(\r\n|\n|\r|\t)/gm,"").replace("|", "%") + "|" + message.chatId + "\n");
         }
 
         stream.end();
