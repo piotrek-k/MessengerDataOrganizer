@@ -27,18 +27,14 @@ fs.readFile('appData\\doNotSync\\messages.html', 'utf8', function (err, data) {
     var THAT = this;
     var stream = fs.createWriteStream("appData\\doNotSync\\messages.txt");
     stream.once('open', function (fd) {
-        // stream.write("My first row\n");
-        // stream.write("My second row\n");
-
         for (var m in THAT.allMessages) {
             var message = THAT.allMessages[m];
-            stream.write(message.userName + "|" + message.dateTimeAsNumber + "|" + message.message + "\n");
+            stream.write(message.id + "|" + message.userName.replace("|", "%") + "|" + message.dateTimeAsNumber + "|" + message.message.replace("|", "%") + "|" + message.chatId + "\n");
         }
 
         stream.end();
         console.log("Saving done");
     });
-    //console.log($.html());
 });
 
 function htmlToData(elem, $, context) {
