@@ -1,13 +1,13 @@
 # README #
 
-Making downloaded Facebook Messenger data useful
+Converts `messages.htm` (file from downloaded personal facebook data) to TXT file that can be loaded in MS Access or Excel.
 
-### What is this repository for? ###
+### Requirements: ###
 
-* Converting messages.htm to TXT file
-* Adjust data for MS Access usage
+* Node.JS
+* Folder with copy of Facebook data (you can find it in settings)
 
-### How do I get set up? ###
+### How to use? ###
 
 * Download personal data from facebook
 * Paste massages.htm to `\appData\doNotSync` folder
