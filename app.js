@@ -1,7 +1,7 @@
 var cheerio = require('cheerio');
 var fs = require('fs');
 
-fs.readFile('appData\\doNotSync\\messages.html', 'utf8', function (err, data) {
+fs.readFile('appData\\template.html', 'utf8', function (err, data) {
     if (err) {
         return console.log(err);
     }
@@ -14,6 +14,8 @@ fs.readFile('appData\\doNotSync\\messages.html', 'utf8', function (err, data) {
     this.allMessages = [];
     this.listOfChats = [];
     this.chatsFromHtml = [];
+    this.allUsers = [];
+    this.chatsToUsersTable = []; //index - user id, values - chats ids
 
     console.log("Html evaluated...");
 
@@ -21,20 +23,94 @@ fs.readFile('appData\\doNotSync\\messages.html', 'utf8', function (err, data) {
 
     console.log("Data loaded to memory...");
 
-    console.log("allMessages: ", allMessages.length);
-    console.log("listOfChats: ", listOfChats.length);
+    console.log("allMessages: ", this.allMessages.length);
+    console.log("listOfChats: ", this.listOfChats.length);
+    console.log("allUsers: ", this.allUsers.length);
+
+    for (var c in this.listOfChats) {
+        var chat = this.listOfChats[c];
+        for (var m in chat.allMembers) {
+            var member = chat.allMembers[m];
+            for (var idInAllUsers in this.allUsers) {
+                if (this.allUsers[idInAllUsers] == member) {
+                    this.chatsToUsersTable[idInAllUsers] = mergeTwoArrays([chat.id], this.chatsToUsersTable[idInAllUsers]);
+                }
+            }
+        }
+    }
 
     var THAT = this;
     var stream = fs.createWriteStream("appData\\doNotSync\\messages.txt");
     stream.once('open', function (fd) {
+        stream.write(
+            "ID | " +
+            "UserName | " +
+            "DateAsNumber | " +
+            "DateOfPosting | " +
+            "Message | " +
+            "ChatID \n"
+        );
         for (var m in THAT.allMessages) {
             var message = THAT.allMessages[m];
             var dateOfPosting = message.dateTime.getDate() + "/" + message.dateTime.getMonth() + "/" + message.dateTime.getFullYear() + " " + message.dateTime.getHours() + ":" + message.dateTime.getMinutes();
-            stream.write(message.id + "|" + message.userName.replace("|", "%") + "|" + message.dateTimeAsNumber + "|" + dateOfPosting + "|" + message.message.replace(/\s+/g, " ").replace(/(\r\n|\n|\r|\t)/gm,"").replace("|", "%") + "|" + message.chatId + "\n");
+            stream.write(
+                message.id + "|" +
+                message.userName.replace("|", "%") + "|" +
+                message.dateTimeAsNumber + "|" +
+                dateOfPosting + "|" +
+                message.message.replace(/\s+/g, " ").replace(/(\r\n|\n|\r|\t)/gm, "").replace("|", "%") + "|" +
+                message.chatId + "\n");
         }
 
         stream.end();
         console.log("Saving done");
+    });
+
+    var stream2 = fs.createWriteStream("appData\\doNotSync\\chats.txt");
+    stream2.once('open', function (fd) {
+        stream2.write(
+            "ID | " +
+            "Title \n"
+        );
+        for (var c in THAT.listOfChats) {
+            var chat = THAT.listOfChats[c];
+            stream2.write(
+                c + "|" +
+                chat.title.replace(/\s+/g, " ").replace(/(\r\n|\n|\r|\t)/gm, "").replace("|", "%") + "\n");
+        }
+        stream2.end();
+    });
+
+    var stream3 = fs.createWriteStream("appData\\doNotSync\\users.txt");
+    stream3.once('open', function (fd) {
+        stream3.write(
+            "ID | " +
+            "User \n"
+        );
+        for (var u in THAT.allUsers) {
+            var user = THAT.allUsers[u];
+            stream3.write(
+                u + "|" +
+                user.replace("|", "%") + "\n");
+        }
+        stream3.end();
+    });
+
+    var stream4 = fs.createWriteStream("appData\\doNotSync\\chatsUsers.txt");
+    stream4.once('open', function (fd) {
+        stream4.write(
+            "UserId | " +
+            "ChatId \n"
+        );
+        for (var ctu in THAT.chatsToUsersTable) {
+            var chatsToUsers = THAT.chatsToUsersTable[ctu];
+            for (var c in chatsToUsers) {
+                stream4.write(
+                    ctu + "|" +
+                    chatsToUsers[c] + " \n");
+            }
+        }
+        stream4.end();
     });
 });
 
@@ -93,6 +169,9 @@ function htmlToData(elem, $, context) {
 
         newChatData.allMembers = mergeTwoArrays(newChatData.membersGotFromMessages, newChatData.membersFromTitle);
 
+        //updating list of all users
+        context.allUsers = mergeTwoArrays(context.allUsers, newChatData.allMembers);
+
         context.chatsFromHtml.push(newChatData);
         console.log("Chat ", countChats, "/", chatElems.length, " completed");
         countChats++;
@@ -102,6 +181,7 @@ function htmlToData(elem, $, context) {
 }
 
 function mergeTwoArrays(a, b) {
+    if (b == undefined) { b = []; }
     return a.concat(b.filter(function (item) {
         return a.indexOf(item) < 0;
     }));
