@@ -1,7 +1,7 @@
 var cheerio = require('cheerio');
 var fs = require('fs');
 
-fs.readFile('appData\\template.html', 'utf8', function (err, data) {
+fs.readFile('appData\\doNotSync\\messages.htm', 'utf8', function (err, data) {
     if (err) {
         return console.log(err);
     }
@@ -52,13 +52,13 @@ fs.readFile('appData\\template.html', 'utf8', function (err, data) {
         );
         for (var m in THAT.allMessages) {
             var message = THAT.allMessages[m];
-            var dateOfPosting = message.dateTime.getDate() + "/" + message.dateTime.getMonth() + "/" + message.dateTime.getFullYear() + " " + message.dateTime.getHours() + ":" + message.dateTime.getMinutes();
+            var dateOfPosting = message.dateTime.getDate() + "/" + (message.dateTime.getMonth()+1) + "/" + message.dateTime.getFullYear() + " " + message.dateTime.getHours() + ":" + message.dateTime.getMinutes();
             stream.write(
                 message.id + "|" +
-                message.userName.replace("|", "%") + "|" +
+                message.userName.replace(/\|/g, "%") + "|" +
                 message.dateTimeAsNumber + "|" +
                 dateOfPosting + "|" +
-                message.message.replace(/\s+/g, " ").replace(/(\r\n|\n|\r|\t)/gm, "").replace("|", "%") + "|" +
+                message.message.replace(/\s+/g, " ").replace(/(\r\n|\n|\r|\t)/gm, "").replace(/\|/g, "%") + "|" +
                 message.chatId + "\n");
         }
 
@@ -75,8 +75,8 @@ fs.readFile('appData\\template.html', 'utf8', function (err, data) {
         for (var c in THAT.listOfChats) {
             var chat = THAT.listOfChats[c];
             stream2.write(
-                c + "|" +
-                chat.title.replace(/\s+/g, " ").replace(/(\r\n|\n|\r|\t)/gm, "").replace("|", "%") + "\n");
+                (c+1) + "|" +
+                chat.title.replace(/\s+/g, " ").replace(/(\r\n|\n|\r|\t)/gm, "").replace(/\|/g, "%") + "\n");
         }
         stream2.end();
     });
@@ -90,8 +90,8 @@ fs.readFile('appData\\template.html', 'utf8', function (err, data) {
         for (var u in THAT.allUsers) {
             var user = THAT.allUsers[u];
             stream3.write(
-                u + "|" +
-                user.replace("|", "%") + "\n");
+                (u+1) + "|" +
+                user.replace(/\|/g, "%") + "\n");
         }
         stream3.end();
     });
@@ -106,7 +106,7 @@ fs.readFile('appData\\template.html', 'utf8', function (err, data) {
             var chatsToUsers = THAT.chatsToUsersTable[ctu];
             for (var c in chatsToUsers) {
                 stream4.write(
-                    ctu + "|" +
+                    (ctu+1) + "|" +
                     chatsToUsers[c] + " \n");
             }
         }
