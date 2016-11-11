@@ -1,0 +1,23 @@
+{
+  "name": "messengertotxt",
+  "version": "1.0.0",
+  "description": "Converts `messages.htm` (file from downloaded personal facebook data) to TXT file that can be loaded in MS Access or Excel.",
+  "main": "app.js",
+  "dependencies": {
+    "cheerio": "^0.22.0"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/piotrek-k/MessengerToTXT.git"
+  },
+  "author": "Piotrek K",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/piotrek-k/MessengerToTXT/issues"
+  },
+  "homepage": "https://github.com/piotrek-k/MessengerToTXT#readme"
+}
