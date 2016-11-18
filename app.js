@@ -75,7 +75,7 @@ fs.readFile('appData\\doNotSync\\messages.htm', 'utf8', function (err, data) {
         for (var c in THAT.listOfChats) {
             var chat = THAT.listOfChats[c];
             stream2.write(
-                (c+1) + "|" +
+                chat.id + "|" +
                 chat.title.replace(/\s+/g, " ").replace(/(\r\n|\n|\r|\t)/gm, "").replace(/\|/g, "%") + "\n");
         }
         stream2.end();
