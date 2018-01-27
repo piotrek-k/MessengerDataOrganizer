@@ -1,7 +1,7 @@
 import unittest
 import dataSaver
 
-class DataSaverTest(unittest.TestCase):
+class DataSaverTest(unittest.TestCase): 
     testChatName = "Chat testowy"
     testUserName = "Pietrek"
     testMessageContent = "Testowa wiadomosc"
