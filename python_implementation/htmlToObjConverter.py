@@ -7,6 +7,8 @@ import dataSaver as ds
 from typing import List
 import datetime
 import re
+import os
+import sys
 
 def load_data(filepath):
     """
@@ -61,31 +63,54 @@ def check_if_user_exists_return_id(username, array_of_all_in_thread):
     return in_db.id
 
 def string_date_to_object_date_converter(string_date):
-    """Date from fb messenger looks like: Sunday, January 4, 2015 at 4:03pm UTC+01"""
-    if re.match(".+\+\d\d$", string_date):
+    """Changes date stored as string to python Date object.
+    Date from fb messenger looks like: Sunday, January 4, 2015 at 4:03pm UTC+01
+    
+    Arguments:
+        string_date {string} -- date as string
+    
+    Returns:
+        datetime
+    """
+
+    if re.match(r".+\+\d\d$", string_date):
         # datetime converter needs timezone information as '+HHMM'. Facebook provides '+HH'
         # add zeros represeting minutes if necessary
         string_date += "00"
     return datetime.datetime.strptime(string_date, "%A, %B %d, %Y at %I:%M%p %Z%z")
 
+def loadAndSaveData(source_path):
+    HTML_CONTENT = load_data(source_path)
+    TREE = html.fromstring(HTML_CONTENT)
 
-HTML_CONTENT = load_data("../appData/template.html")
-TREE = html.fromstring(HTML_CONTENT)
+    THREADS = TREE.find_class('thread')
+    all_threads_number = len(THREADS)
+    count_threads = 0
 
-THREADS = TREE.find_class('thread')
-for thread in THREADS:
-    users_from_thread_name = [x.strip() for x in thread.text.split(',')]
-    users_in_thread = users_to_database(users_from_thread_name)
-    # print("THREAD NAME: ", thread_name)
-    # print("USERS: ", users_in_thread)
-    chatId = ds.createChat(thread.text.strip())
+    for thread in THREADS:
+        count_threads+=1
+        print("Processing thread ", count_threads, "/", all_threads_number)
 
-    for details, content in zip(thread.find_class("message"), thread.findall("p")):
-        message_author_name = details.find_class("user")[0].text
-        userId = check_if_user_exists_return_id(message_author_name, users_in_thread)
-        print(message_author_name)
+        users_from_thread_name = [x.strip() for x in thread.text.split(',')]
+        users_in_thread = users_to_database(users_from_thread_name)
+        # print("THREAD NAME: ", thread_name)
+        # print("USERS: ", users_in_thread)
+        chatId = ds.createChat(thread.text.strip())
 
-        date_as_text = details.find_class("meta")[0].text
-        date = string_date_to_object_date_converter(date_as_text)
+        for details, content in zip(thread.find_class("message"), thread.findall("p")):
+            message_author_name = details.find_class("user")[0].text
+            userId = check_if_user_exists_return_id(message_author_name, users_in_thread)
+            # print(message_author_name)
 
-        print(date)
+            date_as_text = details.find_class("meta")[0].text
+            date = string_date_to_object_date_converter(date_as_text)
+
+            ds.createMessage_AddLater(content.text, userId, chatId, date)
+
+        ds.addAllFromWaitingQueue()
+
+if sys.argv[1] == "--help":
+    print("Provide source file name")
+if sys.argv[1] is not None:
+    print(sys.argv[1])
+    loadAndSaveData(sys.argv[1])

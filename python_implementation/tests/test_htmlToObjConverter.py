@@ -1,4 +1,4 @@
-from htmlToObjConverter import string_date_to_object_date_converter
+from htmlToObjConverter import string_date_to_object_date_converter, loadAndSaveData
 import unittest
 import datetime
 import pytz
@@ -11,3 +11,6 @@ class DataConverterTest(unittest.TestCase):
         proper_time = datetime.datetime(2015, 1, 4, 16, 3, 0, tzinfo=pytz.timezone("CET"))
 
         self.assertEqual(proper_time, generated_time)
+    
+    def test_load_and_save_data(self):
+        loadAndSaveData("../appData/template.html")
