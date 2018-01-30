@@ -1,5 +1,7 @@
 import data_to_db_additional_modules.database_configuration as dc
 from peewee import *
+import sys
+import inspect
 
 def string_change_size(text, size):
     if len(text) > size:
@@ -54,7 +56,23 @@ def chat_by_month_activity(chatId):
     for q in query:
         print(q.yearmonth, " ", q.messages_count, " ")
 
+all_options = [
+    count_all_messages,
+    chats_time_range,
+    chat_by_month_activity
+]
 
-count_all_messages()
-chats_time_range()
-chat_by_month_activity(35)
+if len(sys.argv) > 1:
+    for ao in all_options:
+        if ao.__name__ == sys.argv[1]:
+            if len(sys.argv) > 2:
+                ao(sys.argv[2])
+            else:
+                ao()
+else:
+    print("--List of all options you can use:--")
+    print("schema: [OPTION NAME] ([PARAMETERS IT TAKE]): ")
+    print()
+    for ao in all_options:
+        print("\t", ao.__name__, "(",  list(inspect.signature(ao).parameters.keys()), ")")
+            
