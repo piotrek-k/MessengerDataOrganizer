@@ -2,8 +2,10 @@ from peewee import *
 from datetime import date
 import os
 
-os.remove("../appData/database.db")
-db = SqliteDatabase("../appData/database.db")
+PATH_TO_DB = "../appData/doNotSync/database.db"
+
+os.remove(PATH_TO_DB)
+db = SqliteDatabase(PATH_TO_DB)
 
 class BaseModel(Model):
     class Meta:

@@ -2,3 +2,4 @@ appData/doNotSync
 node_modules
 *.db
 appData/messages.db
+appData/database.db-journal
