@@ -1,6 +1,10 @@
-import dataSaver as ds
+"""
+Set of functions to make data ready for storing in database
+"""
+
 import re
 import datetime
+import data_to_db_additional_modules.database_configuration as ds
 
 def load_data(filepath):
     """
@@ -9,7 +13,7 @@ def load_data(filepath):
     Args:
         filepath: path to messages.htm (file downloaded from facebook)
     """
-    with open(filepath) as file:
+    with open(filepath, encoding="utf8") as file:
         return file.read()
 
 class User_with_db_id():
@@ -23,10 +27,10 @@ class User_with_db_id():
 def users_to_database(array_of_names_users):
     """Gets all user names from provided array, check if they are present in database.
     Adds them to db if necessary.
-    
+
     Arguments:
         array_of_names_users {string[]} -- list of names
-    
+
     Returns:
         [type] -- [description]
     """
@@ -39,7 +43,7 @@ def users_to_database(array_of_names_users):
 
 def check_if_user_exists_return_id(username, array_of_all_in_thread):
     """Check if name of user exsits in database, adds user to db if necessary
-    
+
     Arguments:
         username {string} -- name of user
         array_of_all_in_thread {List[User_with_db_id]} -- list of object of type User_with_db_id
@@ -57,10 +61,10 @@ def check_if_user_exists_return_id(username, array_of_all_in_thread):
 def string_date_to_object_date_converter(string_date):
     """Changes date stored as string to python Date object.
     Date from fb messenger looks like: Sunday, January 4, 2015 at 4:03pm UTC+01
-    
+
     Arguments:
         string_date {string} -- date as string
-    
+
     Returns:
         datetime
     """

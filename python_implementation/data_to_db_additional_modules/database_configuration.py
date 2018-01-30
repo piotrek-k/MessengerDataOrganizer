@@ -1,10 +1,17 @@
+"""
+Configuring database, its shape and declaring possibly helpful functions to operate on it
+"""
+
 from peewee import *
 from datetime import date
 import os
 
 PATH_TO_DB = "../appData/doNotSync/database.db"
 
-os.remove(PATH_TO_DB)
+try:
+    os.remove(PATH_TO_DB)
+except OSError:
+    pass
 db = SqliteDatabase(PATH_TO_DB)
 
 class BaseModel(Model):
@@ -18,7 +25,7 @@ class Chat(BaseModel):
     name = CharField(unique=True)
 
 class Message(BaseModel):
-    text = CharField()
+    text = CharField(null = True)
     created_by = ForeignKeyField(User)
     posted_in = ForeignKeyField(Chat)
     date = DateTimeField()
@@ -41,9 +48,16 @@ waiting_queue = []
 
 def createMessage_AddLater(messageText, userId, chatId, dateOfPosting):
     waiting_queue.append({'text':messageText, 'created_by': userId, 'posted_in': chatId, 'date': dateOfPosting})
+    if len(waiting_queue) >= 100: # default max in bulk insert is 999 https://www.sqlite.org/limits.html#max_variable_number
+        addAllFromWaitingQueue()
 
 def addAllFromWaitingQueue():
-    Message.insert_many(waiting_queue).execute()
+    if len(waiting_queue) == 0:
+        return
+    try:
+        Message.insert_many(waiting_queue).execute()
+    except:
+        pass
     waiting_queue.clear()
 
 db.connect()

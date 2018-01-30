@@ -2,27 +2,33 @@
 Module extracting messages from facebook messenger
 """
 
+import sys
 from lxml import html
-import dataSaver as ds
+import data_to_db_additional_modules.database_configuration as ds
 from typing import List
 import datetime
 import re
 import os
-import sys
-import toolsForDataConverting as tools
+import data_to_db_additional_modules.data_converting_tools as tools
 import glob
 
-def findAllThreads(path_to_folder):
+def find_all_threads(path_to_folder):
+    """Looks for all html files. Then sends them to load_and_save_data
+
+    Arguments:
+        path_to_folder {[type]} -- [description]
+    """
+
     array_of_file_names = glob.glob(path_to_folder + '/*.html')
     print(len(array_of_file_names), " threads discovered")
     count_files = 1
     for file in array_of_file_names:
-        print("Extracting from file ", count_files)
-        loadAndSaveData(file)
+        print(count_files, "/", len(array_of_file_names), " (",file,")")
+        load_and_save_data(file)
         count_files += 1
 
 
-def loadAndSaveData(source_path):
+def load_and_save_data(source_path):
     # try to extract chatId from file name
     # chatId = -1
     # chatIdSearchResult = re.search(r'.+\\(\d+)\.html$', source_path)
@@ -46,6 +52,7 @@ def loadAndSaveData(source_path):
     for details, content in zip(THREAD.find_class("message"), THREAD.findall("p")):
         message_author_name = details.find_class("user")[0].text
         userId = tools.check_if_user_exists_return_id(message_author_name, users_in_thread)
+        
         #print(message_author_name)
 
         date_as_text = details.find_class("meta")[0].text
@@ -58,8 +65,20 @@ def loadAndSaveData(source_path):
 
     ds.addAllFromWaitingQueue()
 
-if sys.argv[1] == "--help":
-    print("Type path to folder with html files with messages as argument")
-if sys.argv[1] is not None:
-    print(sys.argv[1])
-    findAllThreads(sys.argv[1])
+def information_for_user():
+    print("Your data will be saved in '../appData' folder. Previous database will be deleted.")
+    input("Press Enter to continue...")
+
+# print(len(sys.argv))
+if len(sys.argv) > 1:
+    if sys.argv[1] == "--help":
+        print("Type path to folder with html files with messages as argument")
+    if sys.argv[1] is not None:
+        # print(sys.argv[1])
+        #information_for_user()
+        # print("TYPED PATH",sys.argv[1])
+        find_all_threads(sys.argv[1])
+else:
+    path = input('Enter a path to folder with fb messenger data: ')
+    # print("TYPED PATH",path)
+    find_all_threads(path)
