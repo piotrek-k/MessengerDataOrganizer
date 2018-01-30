@@ -26,6 +26,7 @@ def find_all_threads(path_to_folder):
         print(count_files, "/", len(array_of_file_names), " (",file,")")
         load_and_save_data(file)
         count_files += 1
+    print("Finished")
 
 
 def load_and_save_data(source_path):
@@ -77,8 +78,10 @@ if len(sys.argv) > 1:
         # print(sys.argv[1])
         #information_for_user()
         # print("TYPED PATH",sys.argv[1])
+        ds.remove_previous_db()
         find_all_threads(sys.argv[1])
 else:
     path = input('Enter a path to folder with fb messenger data: ')
     # print("TYPED PATH",path)
+    ds.remove_previous_db()
     find_all_threads(path)
