@@ -67,7 +67,10 @@ def load_and_save_data(source_path):
     ds.addAllFromWaitingQueue()
 
 def information_for_user():
-    print("Your data will be saved in '../appData' folder. Previous database will be deleted.")
+    print("-----------------------")
+    print("\n")
+    print("Application loads all html files with messenger data and saves it to SQLite database on your computer.")
+    print("Your data will be saved in '../appData/doNotSync/database.db' file. Previous database, if exists, will be deleted, so make a copy if you need it.")
     input("Press Enter to continue...")
 
 # print(len(sys.argv))
@@ -81,6 +84,7 @@ if len(sys.argv) > 1:
         ds.remove_previous_db()
         find_all_threads(sys.argv[1])
 else:
+    information_for_user()
     path = input('Enter a path to folder with fb messenger data: ')
     # print("TYPED PATH",path)
     ds.remove_previous_db()
