@@ -10,11 +10,13 @@ import datetime
 
 PATH_TO_DB = "../appData/doNotSync/database.db"
 
-try:
-    os.remove(PATH_TO_DB)
-except OSError:
-    print("Error: DB file cannot be removed")
-    pass
+# Deleting old db worked every time when file was imported
+# TODO: Need to develop some way to run it conditionally
+# try:
+#     os.remove(PATH_TO_DB)
+# except OSError:
+#     print("Error: DB file cannot be removed")
+#     pass
 
 db = SqliteDatabase(PATH_TO_DB)
 

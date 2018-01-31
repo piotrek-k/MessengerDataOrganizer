@@ -52,7 +52,10 @@ def load_and_save_data(source_path):
     all_p_objects = THREAD.xpath("./p[parent::div[@class='thread']]")
     p_objects_to_consider = []
     for p in all_p_objects:
-        if len(p.xpath("img|video|audio"))>0 or "".join(p.text.split()) != "":
+        p_text = p.text
+        if p_text is None:
+            p_text = ""
+        if len(p.xpath("img|video|audio"))>0 or "".join(p_text.split()) != "":
             p_objects_to_consider.append(p)
 
     # message content and details are placed alternately
