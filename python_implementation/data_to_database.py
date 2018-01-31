@@ -49,20 +49,33 @@ def load_and_save_data(source_path):
 
     users_in_thread = [] # keep users names in memory. checking if they exists in db takes time
 
+    all_p_objects = THREAD.xpath("./p[parent::div[@class='thread']]")
+    p_objects_to_consider = []
+    for p in all_p_objects:
+        if len(p.xpath("img|video|audio"))>0 or "".join(p.text.split()) != "":
+            p_objects_to_consider.append(p)
+
     # message content and details are placed alternately
-    for details, content in zip(THREAD.find_class("message"), THREAD.findall("p")):
+    for details, content in zip(THREAD.find_class("message"), p_objects_to_consider):
         message_author_name = details.find_class("user")[0].text
         userId = tools.check_if_user_exists_return_id(message_author_name, users_in_thread)
         
-        #print(message_author_name)
+        external_media_paths = []
+        try:
+            external_media_paths = content.xpath("./img/@src|./video/@src|./audio/@src")
+        except:
+            pass
 
         date_as_text = details.find_class("meta")[0].text
         date = tools.string_date_to_object_date_converter(date_as_text)
-
-        #print(date)
-        #print(content.text, "utf-8")
-
-        ds.createMessage_AddLater(content.text, userId, chatId, date)
+        message_text = content.text
+        
+        if len(external_media_paths) > 0:
+            for media_file_path in external_media_paths:
+                # print("tst", message_author_name, message_text, media_file_path)
+                ds.createMessage_AddLater(message_text, userId, chatId, date, media_file_path)
+        else:
+            ds.createMessage_AddLater(message_text, userId, chatId, date, "")
 
     ds.addAllFromWaitingQueue()
 
@@ -81,11 +94,11 @@ if len(sys.argv) > 1:
         # print(sys.argv[1])
         #information_for_user()
         # print("TYPED PATH",sys.argv[1])
-        ds.remove_previous_db()
+        # ds.remove_previous_db()
         find_all_threads(sys.argv[1])
 else:
     information_for_user()
     path = input('Enter a path to folder with fb messenger data: ')
     # print("TYPED PATH",path)
-    ds.remove_previous_db()
+    # ds.remove_previous_db()
     find_all_threads(path)

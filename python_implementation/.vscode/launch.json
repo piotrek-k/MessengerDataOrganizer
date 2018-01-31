@@ -16,6 +16,9 @@
             "envFile": "${workspaceFolder}/.env",
             "debugOptions": [
                 "RedirectOutput"
+            ],
+            "args": [
+                "../appData/"
             ]
         },
         {
