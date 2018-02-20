@@ -7,8 +7,20 @@ from datetime import date
 import os
 import pytz
 import datetime
+import errno
 
 PATH_TO_DB = "../appData/doNotSync/database.db"
+
+# Ensuring that given path to db exists and database can be created there
+if not os.path.exists(os.path.dirname(PATH_TO_DB)):
+    try:
+        os.makedirs(os.path.dirname(PATH_TO_DB))
+    except OSError as exc:
+        # makedirs will throw error if that path exists
+        # for us it's ok, we can omit it, but let's make sure 
+        # that OSError wasn't called for some other reason
+        if exc.errno != errno.EEXIST:
+            raise
 
 # Deleting old db worked every time when file was imported
 # TODO: Need to develop some way to run it conditionally
