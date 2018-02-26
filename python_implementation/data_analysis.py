@@ -3,6 +3,8 @@ from peewee import *
 import sys
 import inspect
 import io
+import matplotlib.pyplot as plt
+import numpy as np
 
 def string_change_size(text, size):
     if len(text) > size:
@@ -10,6 +12,15 @@ def string_change_size(text, size):
     if len(text) < size:
             text = text.ljust(size)
     return text
+
+def leading_zero(number):
+    as_int = int(number)
+    result = ""
+    if(as_int <= 9 and as_int >= 0):
+        result = "0" + str(as_int)
+    else:
+        result = "" + str(as_int)
+    return result
 
 def print_to_file(*arg):
     caller_function_name = inspect.stack()[1][3]
@@ -75,6 +86,13 @@ def chat_by_month_activity(chatId):
         print(q.yearmonth, " ", q.messages_count, " ")
         print_to_file(q.yearmonth, q.messages_count, q.year, q.month)
 
+def assign_id_to_values(array, new_val):
+    for a in array:
+        if a[0] == new_val:
+            return a[1]
+    array.append([new_val, len(array)])
+    return len(array)-1
+
 def user_in_chat_by_month_activity(chatId):
     clean_file()
     print("ChatID: ", chatId, " Name: ", dc.Chat.get(dc.Chat.id == chatId).name)
@@ -84,19 +102,78 @@ def user_in_chat_by_month_activity(chatId):
     year_column = dc.Message.date_utc.year
     message_count = fn.Count(dc.Message.id)
     yearmonthname_column = year_column.concat("_").concat(month_column).concat("_").concat(dc.User.name)
+    yearmonth_column = year_column.concat("_").concat(month_column)
     query = (dc.Message
-             .select(yearmonthname_column.alias('yearmonthname'), dc.User.name, message_count.alias("messages_count"), year_column.alias("year"), month_column.alias("month"))
+             .select(yearmonthname_column.alias('yearmonthname'),
+                yearmonth_column.alias('yearmonth'),
+                dc.User.name,
+                dc.Message.date_utc,
+                message_count.alias("messages_count"),
+                year_column.alias("year"),
+                month_column.alias("month"))
              .join(dc.User)
              .where(dc.Message.posted_in == chatId)
-             .group_by(yearmonthname_column)
              .order_by(message_count.desc())
-             .order_by(month_column)
-             .order_by(year_column)
+             .order_by(dc.Message.date_utc)
+             .group_by(yearmonthname_column)
+             
+             #.order_by(month_column.cast('Integer'))
+             #.order_by(year_column)
+             
              )
+    print(query.sql())
 
+    participants = (dc.Message
+                    .select(dc.Message.posted_in,
+                        dc.User.name)
+                    .join(dc.User)
+                    .where(dc.Message.posted_in == chatId)
+                    .group_by(dc.User.name))
+    #print(participants.sql())
+    all_year_months = (dc.Message.select(yearmonth_column.alias('yearmonth')).where(dc.Message.posted_in == chatId).group_by(yearmonth_column))
+
+    # for p in time_ids:
+    #     print(p.yearmonthname)
+    all_year_months_as_string = []
+    for ym in all_year_months:
+        all_year_months_as_string.append(ym.yearmonth)
+    yearmonths_and_id = []
+    for p in participants:
+        values = []
+        data_for_one_user = query.where(dc.User.name == p.created_by.name)
+        for ym in all_year_months:
+            values_query = query.where((dc.User.name == p.created_by.name) & (ym.yearmonth == yearmonth_column) )
+            if len(values_query) == 1:
+                values.append(values_query[0].messages_count)
+            elif len(values_query) > 1:
+                values.append(-1)
+            else:
+                values.append(0)
+        print(values)
+        plt.plot(values, label=p.created_by.name)
+        plt.xticks(np.arange(len(values)), all_year_months_as_string)
+        #for d in data_for_one_user:
+            #values.append()
+            #print(d.created_by.name, d.messages_count, assign_id_to_values(yearmonths_and_id, d.yearmonth), "("+d.yearmonth+")")
+    plt.xlabel('Month', fontsize=18)
+    plt.ylabel('Messages', fontsize=16)
+    plt.legend(loc='best')
+    plt.xticks(fontsize=7, rotation=90)
+    plt.show()
+
+    # chart_data = []
     for q in query:
+    #     chart_data.append([q.created_by.name, q.messages_count, str(q.year) + "_" + leading_zero(q.month)])
         print(q.yearmonthname, q.created_by.name, " ", q.messages_count, " ")
-        print_to_file(q.yearmonthname, q.created_by.name, q.messages_count, q.year, q.month)
+    #     print_to_file(q.yearmonthname, q.created_by.name, q.messages_count, q.year, q.month)
+        # for x in query.where()
+    # print(chart_data)
+    # chart_data.sort(key=lambda x:x[2])
+    # print("Sorted:")
+    # print(chart_data)
+
+    # plt.plot([row[1] for row in chart_data], [row[1] for row in chart_data])
+    #plt.show()
 
 all_options = [
     count_all_messages,
